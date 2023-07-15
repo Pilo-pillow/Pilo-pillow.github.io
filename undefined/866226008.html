@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            快速排序详解
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+    
+<meta name="generator" content="Hexo 6.3.0"></head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">快速排序详解</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2023-02-19
+                        </span>
+                        
+                            <span id="/undefined/866226008.html" class="leancloud_visitors" data-flag-title="快速排序详解">
+                                <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                            </span>
+                        
+                        <span>
+                            <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/undefined/866226008.html"></span>
+                        </span>  
+                    </p>
+                    
+                        
+                            <span class="category-color">算法</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">快速排序</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="快速排序详解"><a class="markdownIt-Anchor" href="#快速排序详解"></a> 快速排序详解</h1>
+<blockquote>
+<p>有问题欢迎提出</p>
+</blockquote>
+<h2 id="引入"><a class="markdownIt-Anchor" href="#引入"></a> 引入</h2>
+<p>排序是个很耐思考的事情</p>
+<p>比如体育课上老师给我们排位置，为了尽量让所有的学生能够看到老师的动作，需要将个子低的排在前面，个子高的排在后面，那么高高低低的学生站成一堆，如何排序呢？</p>
+<p>先换个思路，如果已经整理好了一个由低到高的队伍，突然来了一个插班生，如何找到他的正确位置呢？他会从队首走到队尾找位置，直到这个位置前面的同学比自己低，后面的同学比自己高。</p>
+<p>那么在一个无序的队伍中，我们可以随便找一个学生A出来，将他与其他同学一个一个比较，比他低的同学排在一个低队伍，比他高的同学排成一个高队伍，然后将A插在低队伍和高队伍之间，此时A前面的同学都比自己低，后面的同学都比自己高，不用管其他同学的位置怎样，同学A的位置就已经是正确的了。之后再对高队伍和低队伍也找个同学执行同样的操作，最后所有同学都在正确的位置上，排队伍的工作就完成了。</p>
+<h2 id="简要"><a class="markdownIt-Anchor" href="#简要"></a> 简要</h2>
+<p>排队伍的栗子就是基本的快速排序。</p>
+<p>快速排序基本思想是：通过判断、交换和递归将各个元素放在集合中正确的位置以完成排序。</p>
+<p>快速排序是冒泡排序的优化，其优点在于快排遍历更少，所做的交换更具有意义，也更少。</p>
+<p>快速排序使用了分治的思想，将一个复杂问题不断分成多个相同或类似的子问题，直到最小的子问题得到解决，复杂问题也随之解决。</p>
+<h2 id="详解"><a class="markdownIt-Anchor" href="#详解"></a> 详解</h2>
+<p>以下是对方法用处的简要说明，便于快速带入理解：</p>
+<ul>
+<li><code>quickSort</code>：快排，对数组排序的方法</li>
+<li><code>paritition</code>：分区，找到一个元素的正确位置，同时确定分治（递归）的边界</li>
+<li><code>swap</code>：交换，交换数组内两个位置的元素</li>
+<li><em><code>quickSelect</code></em>：快速选择</li>
+</ul>
+<p>以下是对变量名称的简要说明：</p>
+<ul>
+<li>
+<p><code>nums</code>：需排序的数组</p>
+</li>
+<li>
+<p><code>left</code>：需要排序数组的左边界</p>
+</li>
+<li>
+<p><code>right</code>：需要排序数组的右边界</p>
+</li>
+<li>
+<p><code>leftPoint</code>：数组中位于左侧的指针，含义根据以下不同快排有所不同</p>
+</li>
+<li>
+<p><code>rightPoint</code>：数组中位于右侧的指针</p>
+</li>
+<li>
+<p><code>pivot</code>：基准值</p>
+</li>
+<li>
+<p><em><code>middle</code></em>：三路快排的中间指针</p>
+</li>
+</ul>
+<p>快速排序的整体框架如下，其各类别会因为不同的需求对<code>partition</code>方法做出调整。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">class quickSort &#123;</span><br><span class="line">    public void quickSort(int[] nums, int left, int right) &#123;</span><br><span class="line">        if (left &gt;= right) return;</span><br><span class="line">        int pivotIndex = paritition(nums, left, right);</span><br><span class="line">        quickSort(nums, left, pivotIndex - 1);</span><br><span class="line">        quickSort(nums, pivotIndex + 1, right);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private int paritition(int[] nums, int left, int right) &#123;</span><br><span class="line">    // get num the right index</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private void swap(int[] nums, int x, int y) &#123;</span><br><span class="line">        int temp = nums[x];</span><br><span class="line">        nums[x] = nums[y];</span><br><span class="line">        nums[y] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="基本快排"><a class="markdownIt-Anchor" href="#基本快排"></a> 基本快排</h3>
+<p>初始化：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">leftPoint = left;</span><br><span class="line">rightPoint = left + 1;</span><br><span class="line">pivot = nums[left];</span><br></pre></td></tr></table></figure>
+<p>我们使用<code>rightPoint</code>遍历<code>[left, right]</code>区间除了<code>pivot</code>的所有的数，遇到小于<code>pivot</code>的数时，先让<code>left++</code>指向下个数，然后交换<code>left</code>和<code>right</code>所指数的位置，使得小数在前；遇到大于<code>pivot</code>的数跳过，直到<code>rightPoint &gt; right</code>结束此次寻找。</p>
+<p>此时<code>left</code>所在得位置即是<code>pivot</code>的正确位置，与<code>left</code>交换返回即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">paritition</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">pivot</span> <span class="operator">=</span> nums[left];</span><br><span class="line">    <span class="type">int</span> <span class="variable">leftPoint</span> <span class="operator">=</span> left;</span><br><span class="line">    <span class="type">int</span> <span class="variable">rightPoint</span> <span class="operator">=</span> left + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (; rightPoint &lt;= right; rightPoint++)</span><br><span class="line">        <span class="keyword">if</span> (nums[rightPoint] &lt; pivot)</span><br><span class="line">            swap(nums, rightPoint, ++leftPoint);</span><br><span class="line">    swap(nums, leftPoint, left);</span><br><span class="line">    <span class="keyword">return</span> leftPoint;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>也可以初始化<code>leftPoint == left + 1</code>，提前指向下一位置（比基准值小的区间的下一个值），在与<code>rightPoint</code>交换后再+1，循环结束基准值的正确位置为<code>leftPoint - 1</code>。</em></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">paritition</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">pivot</span> <span class="operator">=</span> nums[left];</span><br><span class="line">    <span class="type">int</span> <span class="variable">leftPoint</span> <span class="operator">=</span> left + <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">rightPoint</span> <span class="operator">=</span> left + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (; rightPoint &lt;= right; rightPoint++)</span><br><span class="line">        <span class="keyword">if</span> (nums[rightPoint] &lt; pivot)</span><br><span class="line">            swap(nums, rightPoint, leftPoint++);</span><br><span class="line">    swap(nums, leftPoint - <span class="number">1</span>, left);</span><br><span class="line">    <span class="keyword">return</span> leftPoint - <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="随机快排"><a class="markdownIt-Anchor" href="#随机快排"></a> 随机快排</h3>
+<p>当数组趋于有序时，例如<code>&#123;1,2,3,4,5,6,7,9,8&#125;</code>。</p>
+<p>使用基本快排会先遍历1右边所有的数确定1的位置，然后遍历2右边所有的数确定2的位置……每次排定的基准值左侧无数值，此时的递归基本名存实亡了，最后时间复杂度由原来的<code>O(nlogn)</code>坍缩为<code>O(n^2)</code>。</p>
+<p>所以我们引入随机基准数。</p>
+<p>在每次使用<code>left</code>确定基准数的之前，将<code>left</code>与右方随机一个元素交换位置，然后再找随机基准值的正确位置，此时递归便可如期成立，利用空间换取时间。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">paritition1</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">    <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>(System.currentTimeMillis());</span><br><span class="line">    <span class="type">int</span> <span class="variable">randomIndex</span> <span class="operator">=</span> left + random.nextInt(right - left + <span class="number">1</span>);</span><br><span class="line">    swap(nums, left, randomIndex);</span><br><span class="line">    <span class="type">int</span> <span class="variable">pivot</span> <span class="operator">=</span> nums[left];</span><br><span class="line">    <span class="type">int</span> <span class="variable">leftPoint</span> <span class="operator">=</span> left;</span><br><span class="line">    <span class="type">int</span> <span class="variable">rightPoint</span> <span class="operator">=</span> left + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (; rightPoint &lt;= right; rightPoint++)</span><br><span class="line">        <span class="keyword">if</span> (nums[rightPoint] &lt; pivot)</span><br><span class="line">            swap(nums, rightPoint, ++leftPoint);</span><br><span class="line">    swap(nums, leftPoint, left);</span><br><span class="line">    <span class="keyword">return</span> leftPoint;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="双路随机快排"><a class="markdownIt-Anchor" href="#双路随机快排"></a> 双路随机快排</h3>
+<p>当数组有很多相同元素的时候，例如<code>&#123;1，2，2，2，2，2，2，2，2，1，3&#125;</code>，即使引入了随机基准数，在进行判定时</p>
+<p>无论是<code>if (nums[rightPoint] &lt; pivot)</code></p>
+<p>还是<code>if (nums[rightPoint] &gt; pivot)</code></p>
+<p>都会造成比基准值大的区间·或者·小的区间·元素过多，从而无法有效使递归提高效率。</p>
+<p>为了解决问题，引入了双路查找（叫法不统一，理解即可），在查找大小两区间的数时不再仅从一边寻找，而是从两边开始，在左右两个指针不构成合理区间时再将基准值放在正确位置，这样就可以让相等的元素平均地分布在基准值的两侧，保证了递归平衡。</p>
+<p>此时，初始化：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">leftPoint = left + 1;</span><br><span class="line">rightPoint = right;</span><br></pre></td></tr></table></figure>
+<p>使<code>leftPoint</code>从左向右不断找比基准值大的数</p>
+<p>使<code>rightPoint</code>从右向左不断找比基准值小的数</p>
+<p>然后两者交换，直到不满足<code>leftPoint &lt;= rightPoint</code>时，交换<code>left</code>和<code>leftPoint</code>的值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">partition4</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">    <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>(System.currentTimeMillis());</span><br><span class="line">    <span class="type">int</span> <span class="variable">randomIndex</span> <span class="operator">=</span> left + random.nextInt(right - left + <span class="number">1</span>);</span><br><span class="line">    swap(nums, left, randomIndex);</span><br><span class="line">    <span class="type">int</span> <span class="variable">pivot</span> <span class="operator">=</span> nums[left];</span><br><span class="line">    <span class="type">int</span> <span class="variable">leftPoint</span> <span class="operator">=</span> left + <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">rightPoint</span> <span class="operator">=</span> right;</span><br><span class="line">    <span class="keyword">while</span> (leftPoint &lt;= rightPoint) &#123;</span><br><span class="line">        <span class="keyword">while</span> (leftPoint &lt;= rightPoint &amp;&amp; nums[leftPoint] &lt; pivot) leftPoint++;</span><br><span class="line">        <span class="keyword">while</span> (leftPoint &lt;= rightPoint &amp;&amp; nums[rightPoint] &gt; pivot) rightPoint--;</span><br><span class="line">        <span class="keyword">if</span> (leftPoint &lt; rightPoint) swap(nums, leftPoint, rightPoint);</span><br><span class="line">    &#125;</span><br><span class="line">    swap(nums, left, leftPoint - <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> leftPoint - <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="三路快排"><a class="markdownIt-Anchor" href="#三路快排"></a> 三路快排</h3>
+<p><code>leftPoint</code>和<code>rightPoint</code>的初始化和作用和双路快排相同</p>
+<p>添加一个<code>middle</code>变量用于从<code>left + 1</code>向右遍历元素直至<code>middle &gt; rightPoint</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">partition5</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">    <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>(System.currentTimeMillis());</span><br><span class="line">    <span class="type">int</span> <span class="variable">randomIndex</span> <span class="operator">=</span> left + random.nextInt(right - left + <span class="number">1</span>);</span><br><span class="line">    swap(nums, left, randomIndex);</span><br><span class="line">    <span class="type">int</span> <span class="variable">pivot</span> <span class="operator">=</span> nums[left];</span><br><span class="line">    <span class="type">int</span> <span class="variable">leftPoint</span> <span class="operator">=</span> left + <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">rightPoint</span> <span class="operator">=</span> right;</span><br><span class="line">    <span class="type">int</span> <span class="variable">middle</span> <span class="operator">=</span> left + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (middle &lt;= rightPoint) &#123;</span><br><span class="line">        <span class="keyword">if</span> (nums[middle] &lt; pivot)</span><br><span class="line">            swap(nums, middle++, leftPoint++);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (nums[middle] &gt; pivot)</span><br><span class="line">            swap(nums, middle, rightPoint--);</span><br><span class="line">        <span class="keyword">else</span> middle++;</span><br><span class="line">    &#125;</span><br><span class="line">    swap(nums, left, leftPoint - <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> leftPoint - <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="拓展"><a class="markdownIt-Anchor" href="#拓展"></a> 拓展</h2>
+<h3 id="快速选择"><a class="markdownIt-Anchor" href="#快速选择"></a> 快速选择</h3>
+<p>快速选择是快排的一个使用方法，经常用于查找。</p>
+<p>基本思想是根据条件仅选择一段区间进行遍历，从而提高效率。</p>
+<p>详细的内容带入题解比较容易理解 <a href="https://pillow-blog.top/undefined/3879140556.html">LEETCODE.215.数组中的第K个最大元素</a></p>
+<h3 id="递归不平衡"><a class="markdownIt-Anchor" href="#递归不平衡"></a> 递归不平衡</h3>
+<p>也就是上面提到的基本快速选择的弊端，基准值正确位置的两边区间元素数量差距巨大，导致递归不平衡，使得时间复杂度坍缩。</p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.jpg" alt="Pillow">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>Pillow
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/undefined/866226008.html" target="_blank">快速排序详解</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>人生在于筛选
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="https://github.com/first19326/Hexo-LiveForCode" target="_blank">Hexo - Live For Code</a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/%E7%AE%97%E6%B3%95/">算法</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/">快速排序</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/undefined/1668203856.html" class="prev-prefix">« </a> 上一篇：    <a href="/undefined/1668203856.html" title="发布于 2023-02-25 03:06">LEETCODE.234.回文链表</a>
+                        <br>
+                    
+                    
+                        <a href="/undefined/4265287101.html" class="next-prefix">» </a> 下一篇：    <a href="/undefined/4265287101.html" title="发布于 2023-02-18 05:40">LEETCODE.剑指 Offer 40.最小的k个数</a>
+                    
+                </div>
+            </div>
+            
+    <div class="article-comments">
+        
+            <div class="comments-title">
+                评论列表
+            </div>
+        
+        <div class="comments-content"></div>
+    </div>
+
+        </div>
+    
+</div>
+    <div id="footer"></div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>觉得有非常好听的音乐一定要联系我</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.jpg">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user"><span>Pillow</span></div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/donate" class="" target="_self"><span class="iconfont icon-heart-fill"></span>赞赏</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="/atom.xml" class="" target="_blank"><span class="iconfont icon-rss"></span>订阅</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
+                    
+                        <li class=""><a href="/friend" class="" target="_self"><span class="iconfont icon-link"></span>友情链接</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="知乎" href="https://www.zhihu.com/" class="" target="_blank" data=""><span class="iconfont icon-zhihu"></span></a>
+                
+                    <a name="微博" href="https://weibo.com/" class="" target="_blank" data=""><span class="iconfont icon-weibo"></span></a>
+                
+                    <a name="QQ" href="javascript:;" class="image" target="_self" data="/image/sidebar/qq.png"><span class="iconfont icon-qq"></span></a>
+                
+                    <a name="WeChat" href="javascript:;" class="" target="_self" data="/image/sidebar/wechat.png"><span class="iconfont icon-wechat"></span></a>
+                
+                    <a name="GitHub" href="https://github.com/first19326" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+
+    
+        <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+        <script type="text/javascript" src="/js/APlayer.min.js"></script>
+        <script type="text/javascript" src="/js/Meting.min.js"></script>
+        <meting-js id="8026453505" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="true" loop="all" order="random" preload="auto" volume="0.7" mutex="true"></meting-js>
+    
+    
+    <div class="wrap-right">
+        <div class="setting">
+            <div class="iconbox favorites" switch="false">
+                <span class="iconfont icon-favorites"></span>
+                <span class="icontext">关注</span>
+            </div>
+            <div class="iconbox mode">
+                <div class="light">
+                    <span class="iconfont icon-daymode"></span>
+                    <span class="icontext">浅色模式</span>
+                </div>
+                <div class="dark">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                    <span class="icontext">深色模式</span>
+                </div>
+            </div>
+            <a href="javascript:;" target="_self" class="search">
+                <div class="iconbox">
+                    <span class="iconfont icon-search-menu"></span>
+                    <span class="icontext">搜索</span>
+                </div>
+            </a>
+            <div class="iconbox bottom">
+                <div style="display: inline-block; transform: rotate(180deg);">
+                    <span class="iconfont icon-top"></span>
+                </div>
+                <span class="icontext">跳至底部</span>
+            </div>
+        </div>
+        <div class="iconbox set">
+            <div style="display: inline-block;">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="iconbox top">
+            <span class="iconfont icon-top"></span>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "first19326",
+        GitHubRepositories : "Hexo-LiveForCode",
+
+        User             : "Pillow",
+        UserAvatar       : "/image/sidebar/avatar.jpg",
+        WebsiteStartDate : "2020-01-01",
+
+        WebsiteTitleBlur         : "Where you are?",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "Welcome back",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : "/image/website/logo.png",
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.jpg",
+            
+                "/image/header/home.jpeg",
+            
+        ],
+        HomeBannerText  : "",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.jpg",
+            
+        ],
+
+        OtherBannerText : "",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "觉得有非常好听的音乐一定要联系我",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "赞赏",
+                    icon   : "icon-heart-fill",
+                    href   : "/donate",
+                    type   : "donate",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "订阅",
+                    icon   : "icon-rss",
+                    href   : "/atom.xml",
+                    type   : "",
+                    class  : "",
+                    target : "_blank"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "留言板",
+                    icon   : "icon-comments-fill",
+                    href   : "/comment",
+                    type   : "comment",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "友情链接",
+                    icon   : "icon-link",
+                    href   : "/friend",
+                    type   : "friend",
+                    class  : "",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "知乎",
+                        icon   : "icon-zhihu",
+                        href   : "https://www.zhihu.com/",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+                    {
+                        name   : "微博",
+                        icon   : "icon-weibo",
+                        href   : "https://weibo.com/",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+                    {
+                        name   : "QQ",
+                        icon   : "icon-qq",
+                        href   : "javascript:;",
+                        class  : "image",
+                        target : "_self",
+                        image  : "/image/sidebar/qq.png"
+                    },
+                
+                    {
+                        name   : "WeChat",
+                        icon   : "icon-wechat",
+                        href   : "javascript:;",
+                        class  : "",
+                        target : "_self",
+                        image  : "/image/sidebar/wechat.png"
+                    },
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/first19326",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>【Pillow<span><i class='iconfont icon-like-fill'></i></span>music】</div><div>&copy; 2022-2024 WorstOne. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Based on cnblogs theme SimpleMemory.",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                "SimpleMemory Author:",
+                            
+                                "BNDong",
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                "Theme:",
+                            
+                                "LiveForCode",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "NOHU7IGAZZ",
+            apiKey        : "df648b72f1a5cc30d63ab0d18be51dc4",
+            indexName     : "Index",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Valine : {
+            switch         : true,
+            el             : ".comments-content",
+            appId          : "9AFBkZYL3zvRlz7jtNVPeHPu-9Nh9j0Va",
+            appKey         : "k6cmFxnaKqBy0S1ZXTnkl9Ve",
+            serverURLs     : "",
+            placeholder    : "天空一声巨响",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : ""
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "90",
+                        artist : "Pompeya",
+                        cover  : "/music/cover/Tropical.jpg",
+                        url    : "/music/song/90-pompeya.mp3",
+                        lrc    : "/music/lrc/90.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            id       : "8026453505", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : true, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.7, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js"
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "人生在于筛选"
+        },
+            
+        Theme : {
+            url  : "https://github.com/first19326/Hexo-LiveForCode",
+            name : "Hexo - Live For Code"
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":280,"height":560},"mobile":{"show":false},"rect":"opacity:0.7","log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
